@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: teceo-atividade
+    environment:
+      POSTGRES_USER: teceo
+      POSTGRES_PASSWORD: "123"
+      POSTGRES_DB: teceo_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

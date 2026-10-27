@@ -1,0 +1,6 @@
+{
+  "outputStyle": "mentor",
+  "permissions": {
+    "deny": ["Edit", "Write", "NotebookEdit"]
+  }
+}
