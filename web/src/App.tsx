@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-type Task = {id: number;nome: string;descricao: string; status: boolean;deadline: string}
+type Task = {id: number;nome: string;descricao: string|null; status: boolean;deadline: string|null; created_at: string}
 
 function App() {
   const [nome, setNome] = useState('')
@@ -8,6 +8,7 @@ function App() {
   const [deadline, setDeadline] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [editandoId, setEditandoId] = useState<number | null>(null)
+  const [detalhe, setDetalhe] = useState<Task | null>(null)
 
   async function salvarTask() {
   const dados = {nome, ...(descricao && {descricao}), ...(deadline && {deadline})}
@@ -41,6 +42,17 @@ function App() {
     showTasks()
   }, [])
   
+  async function verDetalhes(id: number) {
+  const response = await fetch(`http://localhost:3000/tasks/${id}`)
+
+  if (!response.ok) {
+    setError('Tarefa não encontrada')
+    return
+  }
+
+  const data: Task = await response.json()
+  setDetalhe(data)
+  }
   async function trocaStatus(task: Task){
     await fetch(`http://localhost:3000/tasks/${task.id}`, {
       method: 'PATCH',
@@ -73,6 +85,7 @@ function App() {
     setDescricao('')
     setDeadline('')
     setError(null)
+    setDetalhe(null)
   }
 
   return (
@@ -111,7 +124,9 @@ function App() {
               onChange={() => trocaStatus(task)}
             />
             <div className="task-info">
-              <strong>{task.nome}</strong>
+              <strong className="link" onClick={() => verDetalhes(task.id)}>
+                  {task.nome}
+              </strong>
               {task.descricao && <span className="task-desc">{task.descricao}</span>}
             </div>
             {task.deadline && <span className="badge">{task.deadline}</span>}
@@ -124,6 +139,16 @@ function App() {
           </li>
           ))}
       </ul>
+      {detalhe && (
+      <div className="detalhe">
+        <h3>{detalhe.nome}</h3>
+        <p>{detalhe.descricao ?? 'Sem descrição'}</p>
+        <p>Status: {detalhe.status ? 'Concluída' : 'Pendente'}</p>
+        <p>Prazo: {detalhe.deadline ?? 'Sem prazo'}</p>
+        <p>Criada em: {new Date(detalhe.created_at).toLocaleString('pt-BR')}</p>
+        <button type="button" onClick={() => setDetalhe(null)}>Fechar</button>
+      </div>
+      )}
       {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>
   )
