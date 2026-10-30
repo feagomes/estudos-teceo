@@ -3,11 +3,11 @@ import { IsDateString, IsNotEmpty, IsOptional, IsString } from "class-validator"
 export class CreateTaskDto {
     @IsString()
     @IsNotEmpty()
-    nome: string;
+    name: string;
 
     @IsString()
     @IsOptional()
-    descricao?: string;
+    description?: string;
 
     @IsOptional()
     @IsDateString()

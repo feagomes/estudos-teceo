@@ -6,10 +6,10 @@ export class Task {
     id: number;
 
     @Column()
-    nome: string;
+    name: string;
 
     @Column({nullable: true})
-    descricao: string;
+    description: string;
 
     @Column({default: false})
     status: boolean;
