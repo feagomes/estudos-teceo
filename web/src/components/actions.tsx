@@ -12,14 +12,16 @@ export type Task = {
 const tasksApi = {
   getTasks: async () => {
     const response = await fetch(`${url}/tasks`);
-    const data: Task[] = await response.json();
-    return data;
+    if (!response.ok) throw new Error("Não foi possível carregar as tarefas");
+    const data: unknown = await response.json();
+    if (!Array.isArray(data)) throw new Error("Resposta inválida da API");
+    return data as Task[];
   },
   findById: async (id: number) => {
     const response = await fetch(`${url}/tasks/${id}`);
     return response;
   },
-  createTask: async (task: Task) => {
+  createTask: async (task: Pick<Task, "name"> & Partial<Pick<Task, "description" | "deadline">>) => {
     const response = await fetch(`${url}/tasks`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -36,9 +38,10 @@ const tasksApi = {
     return response;
   },
   deleteTask: async (id: number) => {
-    await fetch(`${url}/tasks/${id}`, {
+    const response = await fetch(`${url}/tasks/${id}`, {
       method: "DELETE",
     });
+    if (!response.ok) throw new Error("Não foi possível excluir a tarefa");
     return "deleted";
   },
 };

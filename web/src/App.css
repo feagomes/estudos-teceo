@@ -198,6 +198,29 @@ input, button {
   border-color: var(--border) !important;
 }
 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 45%);
+  padding: 16px;
+}
+
+.delete-modal {
+  box-sizing: border-box;
+  width: min(100%, 400px);
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+}
+
+.delete-modal h2 { margin-top: 0; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.delete-confirm { background: #a83f38; border-color: #a83f38; color: white; }
+
 @media (max-width: 850px) {
   .app-layout {
     grid-template-columns: 1fr;

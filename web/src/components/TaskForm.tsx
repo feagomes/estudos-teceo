@@ -1,5 +1,6 @@
-import { useState } from "react";
-import tasksApi, { type Task } from "./actions";
+import { useForm } from "react-hook-form";
+import type { Task } from "./actions";
+import useTasks from "../hooks/useTasks";
 
 interface TaskFormProps {
   task: Task | null;
@@ -7,68 +8,60 @@ interface TaskFormProps {
   onCancel: () => void;
 }
 
+type FormValues = {
+  name: string;
+  description: string;
+  deadline: string;
+};
+
 export default function TaskForm({ task, onSaved, onCancel }: TaskFormProps) {
-  const [name, setName] = useState(task?.name ?? "");
-  const [description, setDescription] = useState(task?.description ?? "");
-  const [deadline, setDeadline] = useState(task?.deadline ?? "");
-  const [error, setError] = useState<string | null>(null);
-  async function saveTask() {
+  const { createTask, pendingCreateTask, editTask, pendingEditTask } = useTasks();
+  const {register, handleSubmit, setError, formState: { errors, isSubmitting },} = useForm<FormValues>({
+    defaultValues: {
+      name: task?.name ?? "",
+      description: task?.description ?? "",
+      deadline: task?.deadline ?? "",
+    },
+  });
+
+  async function saveTask(values: FormValues) {
     const payload = {
-      name,
-      ...(description && { description }),
-      ...(deadline && { deadline }),
+      name: values.name.trim(),
+      ...(values.description.trim() && { description: values.description.trim() }),
+      ...(values.deadline.trim() && { deadline: values.deadline.trim() }),
     };
-    let saved = false;
-    if (task) {
-      const response = await tasksApi.editTask(payload, task.id);
-      saved = response.ok;
-    } else {
-      saved = (await tasksApi.createTask(payload as Task)) === "success";
+
+    try {
+      if (task) await editTask({ task: payload, taskId: task.id });
+      else await createTask(payload);
+      onSaved();
+    } catch {
+      setError("root", { message: "Não foi possível salvar a tarefa" });
     }
-    if (!saved) {
-      setError("Não foi possível salvar a tarefa");
-      return;
-    }
-    setName("");
-    setDescription("");
-    setDeadline("");
-    setError(null);
-    onSaved();
   }
 
-  /*const {mutate: createTask, isPending} = useMutation({
-    mutationFn: (data: Task) => tasksApi.createTask(data)
-  });
-  console.log(createTask, isPending)*/
-
   return (
-    <div className="task-form">
+    <form className="task-form" onSubmit={handleSubmit(saveTask)} noValidate>
       <label className="form-field">
         <span>Nome</span>
         <input
-          value={name}
-          onChange={(event) => setName(event.target.value)}
+          {...register("name", {
+            validate: (value) => value.trim() !== "" || "Informe o nome da tarefa",
+          })}
           placeholder="Ex: Fazer relatório"
         />
+        {errors.name && <span role="alert">{errors.name.message}</span>}
       </label>
       <label className="form-field">
         <span>Descrição</span>
-        <input
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-          placeholder="Ex: Escrever no overleaf"
-        />
+        <input {...register("description")} placeholder="Ex: Escrever no overleaf" />
       </label>
       <label className="form-field">
         <span>Prazo</span>
-        <input
-          value={deadline}
-          onChange={(event) => setDeadline(event.target.value)}
-          placeholder="Ex: 2026-11-01"
-        />
+        <input {...register("deadline")} placeholder="Ex: 2026-11-01" />
       </label>
       <div className="form-actions">
-        <button type="button" onClick={saveTask}>
+        <button type="submit" disabled={isSubmitting || pendingCreateTask || pendingEditTask}>
           {task ? "Salvar" : "Criar Task"}
         </button>
         {task && (
@@ -77,7 +70,7 @@ export default function TaskForm({ task, onSaved, onCancel }: TaskFormProps) {
           </button>
         )}
       </div>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-    </div>
+      {errors.root && <p role="alert" style={{ color: "red" }}>{errors.root.message}</p>}
+    </form>
   );
 }

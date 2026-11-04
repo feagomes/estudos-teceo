@@ -4,18 +4,38 @@ import type { Task } from "./components/actions";
 import TaskForm from "./components/TaskForm";
 import TasksList from "./components/TaskList";
 import TaskDetails from "./components/TaskDetails";
+import DeleteTaskModal from "./components/DeleteTaskModal";
+import useTasks from "./hooks/useTasks";
 
 function App() {
   const [currentTask, setCurrentTask] = useState<Task | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const { deleteTask } = useTasks();
+
+  async function confirmDelete() {
+    if (!taskToDelete) return;
+    try {
+      await deleteTask(taskToDelete.id);
+      if (currentTask?.id === taskToDelete.id) setCurrentTask(null);
+      if (editingTask?.id === taskToDelete.id) {
+        setEditingTask(null);
+        setShowForm(false);
+      }
+      setTaskToDelete(null);
+      setDeleteError(null);
+    } catch {
+      setDeleteError("Não foi possível excluir a tarefa");
+    }
+  }
 
   return (
     <div className="app-layout">
       <main className="tasks-panel">
         <h1>Tarefas</h1>
         <TasksList
-          formOpen={showForm}
           onSelect={(task) => {
             setCurrentTask(task);
             setEditingTask(null);
@@ -25,6 +45,10 @@ function App() {
             setEditingTask(task);
             setCurrentTask(null);
             setShowForm(true);
+          }}
+          onDelete={(task) => {
+            setDeleteError(null);
+            setTaskToDelete(task);
           }}
         />
       </main>
@@ -77,6 +101,12 @@ function App() {
           </p>
         )}
       </aside>
+      <DeleteTaskModal
+        task={taskToDelete}
+        error={deleteError}
+        onCancel={() => setTaskToDelete(null)}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }
