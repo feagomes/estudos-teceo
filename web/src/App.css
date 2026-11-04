@@ -12,12 +12,92 @@ body {
   padding: 32px 16px;
 }
 
-.centro{
-  display:flex;
-  flex-direction: column;
-  gap: 16px;
-  max-width: 600px;
+.app-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(320px, 1fr);
+  gap: 24px;
+  max-width: 1200px;
   margin: 0 auto;
+  align-items: start;
+}
+
+.tasks-panel,
+.side-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  min-width: 0;
+}
+
+.tasks-panel h1,
+.side-panel h2 {
+  font-size: 1.3rem;
+  margin: 0 0 20px;
+}
+
+.side-panel {
+  min-height: 440px;
+  position: sticky;
+  top: 24px;
+}
+
+.side-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+}
+
+.side-panel-header h2 {
+  margin: 0;
+}
+
+.primary-btn,
+.form-actions button:first-child {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+  cursor: pointer;
+}
+
+.panel-hint {
+  color: var(--text-soft);
+  line-height: 1.5;
+}
+
+.task-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.task-form input {
+  box-sizing: border-box;
+  width: 100%;
+  font-weight: 400;
+}
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.detail h3,
+.detail p {
+  margin: 0;
 }
 
 ul {
@@ -43,6 +123,11 @@ ul {
   display: flex;
   flex-direction: column;
   flex: 1;
+  min-width: 0;
+}
+
+.task-info strong {
+  overflow-wrap: anywhere;
 }
 
 .task-desc {
@@ -78,6 +163,12 @@ ul {
   opacity: 1;
 }
 
+.details-btn {
+  color: var(--accent);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
 input, button {
   font-family: inherit;
   font-size: 1em;
@@ -105,4 +196,15 @@ input, button {
   background: var(--card) !important;
   color: var(--text-soft) !important;
   border-color: var(--border) !important;
+}
+
+@media (max-width: 850px) {
+  .app-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .side-panel {
+    position: static;
+    min-height: 240px;
+  }
 }
