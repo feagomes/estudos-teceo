@@ -7,6 +7,8 @@ import TaskDetails from "./components/TaskDetails";
 import DeleteTaskModal from "./components/DeleteTaskModal";
 import useTasks from "./hooks/useTasks";
 
+//Completar validator com zod
+//MUI
 function App() {
   const [currentTask, setCurrentTask] = useState<Task | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -15,6 +17,7 @@ function App() {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const { deleteTask } = useTasks();
 
+  //Colocar no use tasks
   async function confirmDelete() {
     if (!taskToDelete) return;
     try {
@@ -36,6 +39,7 @@ function App() {
       <main className="tasks-panel">
         <h1>Tarefas</h1>
         <TasksList
+          //logica pro hook
           onSelect={(task) => {
             setCurrentTask(task);
             setEditingTask(null);
@@ -45,10 +49,6 @@ function App() {
             setEditingTask(task);
             setCurrentTask(null);
             setShowForm(true);
-          }}
-          onDelete={(task) => {
-            setDeleteError(null);
-            setTaskToDelete(task);
           }}
         />
       </main>
@@ -76,6 +76,7 @@ function App() {
           </button>
         </div>
         {showForm && (
+          //useContext
           <TaskForm
             key={editingTask?.id ?? "new"}
             task={editingTask}

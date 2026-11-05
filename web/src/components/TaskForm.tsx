@@ -15,8 +15,15 @@ type FormValues = {
 };
 
 export default function TaskForm({ task, onSaved, onCancel }: TaskFormProps) {
-  const { createTask, pendingCreateTask, editTask, pendingEditTask } = useTasks();
-  const {register, handleSubmit, setError, formState: { errors, isSubmitting },} = useForm<FormValues>({
+  const { createTask, pendingCreateTask, editTask, pendingEditTask } =
+    useTasks();
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({
+    resolver: undefined, //zod entra aqui
     defaultValues: {
       name: task?.name ?? "",
       description: task?.description ?? "",
@@ -24,6 +31,7 @@ export default function TaskForm({ task, onSaved, onCancel }: TaskFormProps) {
     },
   });
 
+  /* Colocar no useTasks */
   async function saveTask(values: FormValues) {
     const payload = {
       name: values.name,
@@ -32,11 +40,12 @@ export default function TaskForm({ task, onSaved, onCancel }: TaskFormProps) {
     };
 
     try {
+      /* Separar  */
       if (task) await editTask({ task: payload, taskId: task.id });
       else await createTask(payload);
       onSaved();
-    } catch{
-      setError("root",{ message: "Não foi possível salvar a tarefa" });
+    } catch {
+      setError("root", { message: "Não foi possível salvar a tarefa" });
     }
   }
 
@@ -54,14 +63,20 @@ export default function TaskForm({ task, onSaved, onCancel }: TaskFormProps) {
       </label>
       <label className="form-field">
         <span>Descrição</span>
-        <input {...register("description")} placeholder="Ex: Escrever no overleaf" />
+        <input
+          {...register("description")}
+          placeholder="Ex: Escrever no overleaf"
+        />
       </label>
       <label className="form-field">
         <span>Prazo</span>
         <input {...register("deadline")} placeholder="Ex: 2026-11-01" />
       </label>
       <div className="form-actions">
-        <button type="submit" disabled={isSubmitting || pendingCreateTask || pendingEditTask}>
+        <button
+          type="submit"
+          disabled={isSubmitting || pendingCreateTask || pendingEditTask}
+        >
           {task ? "Salvar" : "Criar Task"}
         </button>
         {task && (
@@ -70,7 +85,11 @@ export default function TaskForm({ task, onSaved, onCancel }: TaskFormProps) {
           </button>
         )}
       </div>
-      {errors.root && <p role="alert" style={{ color: "red" }}>{errors.root.message}</p>}
+      {errors.root && (
+        <p role="alert" style={{ color: "red" }}>
+          {errors.root.message}
+        </p>
+      )}
     </form>
   );
 }
