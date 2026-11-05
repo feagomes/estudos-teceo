@@ -7,14 +7,8 @@ interface DeleteTaskModalProps {
   onConfirm: () => void;
 }
 
-export default function DeleteTaskModal({
-  task,
-  error,
-  onCancel,
-  onConfirm,
-}: DeleteTaskModalProps) {
+export default function DeleteTaskModal({task, error, onCancel, onConfirm,}: DeleteTaskModalProps) {
   if (!task) return null;
-
   return (
     <div className="modal-backdrop">
       <section

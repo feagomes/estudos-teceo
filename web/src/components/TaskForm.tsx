@@ -26,17 +26,17 @@ export default function TaskForm({ task, onSaved, onCancel }: TaskFormProps) {
 
   async function saveTask(values: FormValues) {
     const payload = {
-      name: values.name.trim(),
-      ...(values.description.trim() && { description: values.description.trim() }),
-      ...(values.deadline.trim() && { deadline: values.deadline.trim() }),
+      name: values.name,
+      ...(values.description && { description: values.description }),
+      ...(values.deadline && { deadline: values.deadline }),
     };
 
     try {
       if (task) await editTask({ task: payload, taskId: task.id });
       else await createTask(payload);
       onSaved();
-    } catch {
-      setError("root", { message: "Não foi possível salvar a tarefa" });
+    } catch{
+      setError("root",{ message: "Não foi possível salvar a tarefa" });
     }
   }
 
@@ -46,7 +46,7 @@ export default function TaskForm({ task, onSaved, onCancel }: TaskFormProps) {
         <span>Nome</span>
         <input
           {...register("name", {
-            validate: (value) => value.trim() !== "" || "Informe o nome da tarefa",
+            validate: (value) => value !== "" || "Informe o nome da tarefa",
           })}
           placeholder="Ex: Fazer relatório"
         />
