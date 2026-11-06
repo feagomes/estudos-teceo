@@ -1,64 +1,13 @@
-import { useForm } from "react-hook-form";
-import type { Task } from "./actions";
-import useTasks from "../hooks/useTasks";
+import useTaskForm from "../hooks/useTaskForm";
 
-interface TaskFormProps {
-  task: Task | null;
-  onSaved: () => void;
-  onCancel: () => void;
-}
-
-type FormValues = {
-  name: string;
-  description: string;
-  deadline: string;
-};
-
-export default function TaskForm({ task, onSaved, onCancel }: TaskFormProps) {
-  const { createTask, pendingCreateTask, editTask, pendingEditTask } =
-    useTasks();
-  const {
-    register,
-    handleSubmit,
-    setError,
-    formState: { errors, isSubmitting },
-  } = useForm<FormValues>({
-    resolver: undefined, //zod entra aqui
-    defaultValues: {
-      name: task?.name ?? "",
-      description: task?.description ?? "",
-      deadline: task?.deadline ?? "",
-    },
-  });
-
-  /* Colocar no useTasks */
-  async function saveTask(values: FormValues) {
-    const payload = {
-      name: values.name,
-      ...(values.description && { description: values.description }),
-      ...(values.deadline && { deadline: values.deadline }),
-    };
-
-    try {
-      /* Separar  */
-      if (task) await editTask({ task: payload, taskId: task.id });
-      else await createTask(payload);
-      onSaved();
-    } catch {
-      setError("root", { message: "Não foi possível salvar a tarefa" });
-    }
-  }
+export default function TaskForm() {
+  const {task, closeForm, pendingSaveTask, register, handleSubmit, errors, onSubmit, } = useTaskForm();
 
   return (
-    <form className="task-form" onSubmit={handleSubmit(saveTask)} noValidate>
+    <form className="task-form" onSubmit={handleSubmit(onSubmit)} noValidate>
       <label className="form-field">
         <span>Nome</span>
-        <input
-          {...register("name", {
-            validate: (value) => value !== "" || "Informe o nome da tarefa",
-          })}
-          placeholder="Ex: Fazer relatório"
-        />
+        <input {...register("name")} placeholder="Ex: Fazer relatório" />
         {errors.name && <span role="alert">{errors.name.message}</span>}
       </label>
       <label className="form-field">
@@ -67,20 +16,21 @@ export default function TaskForm({ task, onSaved, onCancel }: TaskFormProps) {
           {...register("description")}
           placeholder="Ex: Escrever no overleaf"
         />
+        {errors.description && (
+          <span role="alert">{errors.description.message}</span>
+        )}
       </label>
       <label className="form-field">
         <span>Prazo</span>
-        <input {...register("deadline")} placeholder="Ex: 2026-11-01" />
+        <input type="date" {...register("deadline")} />
+        {errors.deadline && <span role="alert">{errors.deadline.message}</span>}
       </label>
       <div className="form-actions">
-        <button
-          type="submit"
-          disabled={isSubmitting || pendingCreateTask || pendingEditTask}
-        >
+        <button type="submit" disabled={pendingSaveTask}>
           {task ? "Salvar" : "Criar Task"}
         </button>
         {task && (
-          <button type="button" className="secundario" onClick={onCancel}>
+          <button type="button" className="secundario" onClick={closeForm}>
             Cancelar
           </button>
         )}

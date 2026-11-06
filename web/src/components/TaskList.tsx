@@ -1,21 +1,9 @@
-import type { Task } from "./actions";
 import useTasks from "../hooks/useTasks";
+import useTaskPanel from "../hooks/useTaskPanel";
 
-interface TasksListProps {
-  onSelect: (task: Task) => void;
-  onEdit: (task: Task) => void;
-}
-
-export default function TasksList({ onSelect, onEdit }: TasksListProps) {
-  const {
-    tasks,
-    pendingTasks,
-    isError,
-    detailsError,
-    showDetails,
-    changeStatus,
-    pendingChangeStatus,
-  } = useTasks();
+export default function TasksList() {
+  const { openDetails, openEdit, openDelete } = useTaskPanel();
+  const {tasks, pendingTasks, isError, detailsError, showDetails, changeStatus, pendingChangeStatus,} = useTasks();
 
   return (
     <>
@@ -42,24 +30,21 @@ export default function TasksList({ onSelect, onEdit }: TasksListProps) {
               <button
                 type="button"
                 className="details-btn"
-                onClick={async () => {
-                  const selected = await showDetails(task.id);
-                  if (selected) onSelect(selected);
-                }}
+                onClick={() => showDetails(task.id, openDetails)}
               >
                 Detalhes
               </button>
               <button
                 type="button"
                 className="icon-btn"
-                onClick={() => onEdit(task)}
+                onClick={() => openEdit(task)}
               >
                 ✏️
               </button>
               <button
                 type="button"
                 className="icon-btn"
-                onClick={() => onDelete(task)} //openModal
+                onClick={() => openDelete(task)}
               >
                 🗑
               </button>

@@ -1,48 +1,73 @@
+import { z } from "zod";
+
 const url = "http://localhost:3000";
 
-export type Task = {
-  id: number;
-  name: string;
-  description: string | null;
-  status: boolean;
-  deadline: string | null;
-  created_at: string;
-};
+const taskSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  description: z.string().nullable(),
+  status: z.boolean(),
+  deadline: z.string().nullable(),
+  created_at: z.string(),
+});
+export type Task = z.infer<typeof taskSchema>;
+
+export const taskFormSchema = z.object({
+  name: z.string().trim().min(1, "Informe o nome da tarefa"),
+  description: z.string().transform((value) => value || null),
+  deadline: z.string().transform((value) => value || null),
+});
+
+export type TaskFormInput = z.input<typeof taskFormSchema>;
+export type TaskPayload = z.output<typeof taskFormSchema>;
 
 const tasksApi = {
   getTasks: async () => {
     const response = await fetch(`${url}/tasks`);
     if (!response.ok) throw new Error("Não foi possível carregar as tarefas");
-    const data: unknown = await response.json();
-    if (!Array.isArray(data)) throw new Error("Resposta inválida da API");
-    return data as Task[];
+    return z.array(taskSchema).parse(await response.json());
   },
+  
   findById: async (id: number) => {
     const response = await fetch(`${url}/tasks/${id}`);
-    return response;
+    if (!response.ok) {
+      throw new Error(
+        response.status === 404
+          ? "Tarefa não encontrada"
+          : "Não foi possível carregar os detalhes",
+      );
+    }
+    return taskSchema.parse(await response.json());
   },
-  createTask: async (task: Pick<Task, "name"> & Partial<Pick<Task, "description" | "deadline">>) => {
+
+  createTask: async (task: TaskPayload) => {
     const response = await fetch(`${url}/tasks`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(task),
     });
-    return response.ok ? "success" : "failure";
+    if (!response.ok) throw new Error("Não foi possível criar a tarefa");
   },
+
   editTask: async (task: Partial<Task>, taskId: number) => {
     const response = await fetch(`${url}/tasks/${taskId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(task),
     });
-    return response;
+    if (!response.ok) throw new Error("Não foi possível editar a tarefa");
   },
+
   deleteTask: async (id: number) => {
     const response = await fetch(`${url}/tasks/${id}`, {
       method: "DELETE",
     });
     if (!response.ok) throw new Error("Não foi possível excluir a tarefa");
-    return "deleted";
   },
+
+  saveTask: (task: TaskPayload, taskId?: number): Promise<void> =>
+    taskId === undefined
+      ? tasksApi.createTask(task)
+      : tasksApi.editTask(task, taskId),
 };
 export default tasksApi;

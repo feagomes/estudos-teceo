@@ -1,14 +1,25 @@
-import type { Task } from "./actions";
+import useTasks from "../hooks/useTasks";
+import useTaskPanel from "../hooks/useTaskPanel";
 
-interface DeleteTaskModalProps {
-  task: Task | null;
-  error: string | null;
-  onCancel: () => void;
-  onConfirm: () => void;
-}
-
-export default function DeleteTaskModal({task, error, onCancel, onConfirm,}: DeleteTaskModalProps) {
+export default function DeleteTaskModal() {
+  const { taskToDelete: task, closeDelete, handleDeleted } = useTaskPanel();
+  const { deleteTask, pendingDeleteTask, deleteError, resetDeleteTask } = useTasks();
   if (!task) return null;
+
+  function close() {
+    resetDeleteTask();
+    closeDelete();
+  }
+  function confirm() {
+    if (!task) return;
+    deleteTask(task.id, {
+      onSuccess: () => {
+        resetDeleteTask();
+        handleDeleted(task);
+      },
+    });
+  }
+
   return (
     <div className="modal-backdrop">
       <section
@@ -17,15 +28,28 @@ export default function DeleteTaskModal({task, error, onCancel, onConfirm,}: Del
         aria-modal="true"
         aria-labelledby="delete-task-title"
         onKeyDown={(event) => {
-          if (event.key === "Escape") onCancel();
+          if (event.key === "Escape") close();
         }}
       >
         <h2 id="delete-task-title">Excluir tarefa?</h2>
         <p>Deseja excluir “{task.name}”?</p>
-        {error && <p role="alert" style={{ color: "red" }}>{error}</p>}
+        {deleteError && (
+          <p role="alert" style={{ color: "red" }}>
+            {deleteError.message}
+          </p>
+        )}
         <div className="modal-actions">
-          <button type="button" onClick={onCancel} autoFocus>Cancelar</button>
-          <button type="button" className="delete-confirm" onClick={onConfirm}>Excluir</button>
+          <button type="button" onClick={close}>
+            Cancelar
+          </button>
+          <button
+            type="button"
+            className="delete-confirm"
+            disabled={pendingDeleteTask}
+            onClick={confirm}
+          >
+            Excluir
+          </button>
         </div>
       </section>
     </div>
