@@ -3,13 +3,11 @@ import type { Task } from "../components/actions";
 
 export type TaskPanelValue = {
   currentTask: Task | null;
-  editingTask: Task | null;
   showForm: boolean;
   taskToDelete: Task | null;
   openDetails: (task: Task) => void;
   closeDetails: () => void;
   openCreate: () => void;
-  openEdit: (task: Task) => void;
   closeForm: () => void;
   openDelete: (task: Task) => void;
   closeDelete: () => void;

@@ -1,3 +1,4 @@
+import { Alert, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import useTasks from "../hooks/useTasks";
 import useTaskPanel from "../hooks/useTaskPanel";
 
@@ -21,37 +22,18 @@ export default function DeleteTaskModal() {
   }
 
   return (
-    <div className="modal-backdrop">
-      <section
-        className="delete-modal"
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby="delete-task-title"
-        onKeyDown={(event) => {
-          if (event.key === "Escape") close();
-        }}
-      >
-        <h2 id="delete-task-title">Excluir tarefa?</h2>
-        <p>Deseja excluir “{task.name}”?</p>
-        {deleteError && (
-          <p role="alert" style={{ color: "red" }}>
-            {deleteError.message}
-          </p>
-        )}
-        <div className="modal-actions">
-          <button type="button" onClick={close}>
-            Cancelar
-          </button>
-          <button
-            type="button"
-            className="delete-confirm"
-            disabled={pendingDeleteTask}
-            onClick={confirm}
-          >
-            Excluir
-          </button>
-        </div>
-      </section>
-    </div>
+    <Dialog open onClose={close} aria-labelledby="delete-task-title">
+      <DialogTitle id="delete-task-title">Excluir tarefa?</DialogTitle>
+      <DialogContent>
+        <DialogContentText>Deseja excluir “{task.name}”?</DialogContentText>
+        {deleteError && <Alert severity="error" sx={{ mt: 2 }}>{deleteError.message}</Alert>}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={close}>Cancelar</Button>
+        <Button variant="contained" color="error" loading={pendingDeleteTask} onClick={confirm}>
+          Excluir
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }

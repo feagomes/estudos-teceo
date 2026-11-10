@@ -1,20 +1,26 @@
+import { Button, Stack, Typography } from "@mui/material";
 import useTaskPanel from "../hooks/useTaskPanel";
+import type { Task } from "./actions";
 
-export default function TaskDetails() {
-  const { currentTask, closeDetails } = useTaskPanel();
-  if (!currentTask) return null;
+interface TaskDetailsProps{
+  task: Task
+}
+
+export default function TaskDetails({task}: TaskDetailsProps) {
+  const { closeDetails } = useTaskPanel();
+  if (!task) return null;
   return (
-    <div className="detail">
-      <h3>{currentTask.name}</h3>
-      <p>{currentTask.description ?? "Sem descrição"}</p>
-      <p>Status: {currentTask.status ? "Concluída" : "Pendente"}</p>
-      <p>Prazo: {currentTask.deadline ?? "Sem prazo"}</p>
-      <p>
-        Criada em: {new Date(currentTask.created_at).toLocaleString("pt-BR")}
-      </p>
-      <button type="button" onClick={closeDetails}>
+    <Stack spacing={1.5} sx={{ alignItems: "flex-start", overflowWrap: "anywhere" }}>
+      <Typography variant="h6" component="h3">{task.name}</Typography>
+      <Typography>{task.description ?? "Sem descrição"}</Typography>
+      <Typography>Status: {task.status ? "Concluída" : "Pendente"}</Typography>
+      <Typography>Prazo: {task.deadline ?? "Sem prazo"}</Typography>
+      <Typography>
+        Criada em: {new Date(task.created_at).toLocaleString("pt-BR")}
+      </Typography>
+      <Button variant="outlined" onClick={closeDetails}>
         Fechar
-      </button>
-    </div>
+      </Button>
+    </Stack>
   );
 }

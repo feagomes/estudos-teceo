@@ -1,31 +1,22 @@
-import { z } from "zod";
+import type { TaskPayload } from "../hooks/useTaskForm";
 
-const url = "http://localhost:3000";
+const url = import.meta.env.VITE_URL;
 
-const taskSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  description: z.string().nullable(),
-  status: z.boolean(),
-  deadline: z.string().nullable(),
-  created_at: z.string(),
-});
-export type Task = z.infer<typeof taskSchema>;
+export type Task = {
+  id: number;
+  name: string;
+  description: string | null;
+  status: boolean;
+  deadline: string | null;
+  created_at: string;
+};
 
-export const taskFormSchema = z.object({
-  name: z.string().trim().min(1, "Informe o nome da tarefa"),
-  description: z.string().transform((value) => value || null),
-  deadline: z.string().transform((value) => value || null),
-});
-
-export type TaskFormInput = z.input<typeof taskFormSchema>;
-export type TaskPayload = z.output<typeof taskFormSchema>;
 
 const tasksApi = {
   getTasks: async () => {
     const response = await fetch(`${url}/tasks`);
     if (!response.ok) throw new Error("Não foi possível carregar as tarefas");
-    return z.array(taskSchema).parse(await response.json());
+    return (await response.json()) as Task[];
   },
   
   findById: async (id: number) => {
@@ -37,7 +28,7 @@ const tasksApi = {
           : "Não foi possível carregar os detalhes",
       );
     }
-    return taskSchema.parse(await response.json());
+    return (await response.json()) as Task;
   },
 
   createTask: async (task: TaskPayload) => {
@@ -64,10 +55,5 @@ const tasksApi = {
     });
     if (!response.ok) throw new Error("Não foi possível excluir a tarefa");
   },
-
-  saveTask: (task: TaskPayload, taskId?: number): Promise<void> =>
-    taskId === undefined
-      ? tasksApi.createTask(task)
-      : tasksApi.editTask(task, taskId),
 };
 export default tasksApi;

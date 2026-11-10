@@ -1,59 +1,22 @@
+import { Alert, Stack, Typography } from "@mui/material";
 import useTasks from "../hooks/useTasks";
-import useTaskPanel from "../hooks/useTaskPanel";
+import TaskItem from "./TaskItem";
 
 export default function TasksList() {
-  const { openDetails, openEdit, openDelete } = useTaskPanel();
-  const {tasks, pendingTasks, isError, detailsError, showDetails, changeStatus, pendingChangeStatus,} = useTasks();
+  const { tasks, pendingTasks, isError } = useTasks();
 
   return (
     <>
-      {pendingTasks && <p>Carregando tarefas...</p>}
+      {pendingTasks && <Typography color="text.secondary">Carregando tarefas...</Typography>}
       {isError ? (
-        <p role="alert">Não foi possível carregar as tarefas</p>
+        <Alert severity="error">Não foi possível carregar as tarefas</Alert>
       ) : (
-        <ul>
+        <Stack component="ul" spacing={1} sx={{listStyle: "none",p: 0, m: 0 }}>
           {tasks.map((task) => (
-            <li key={task.id} className={task.status ? "task done" : "task"}>
-              <input
-                type="checkbox"
-                checked={task.status}
-                disabled={pendingChangeStatus}
-                onChange={() => changeStatus(task)}
-              />
-              <div className="task-info">
-                <strong>{task.name}</strong>
-                {task.description && (
-                  <span className="task-desc">{task.description}</span>
-                )}
-              </div>
-              {task.deadline && <span className="badge">{task.deadline}</span>}
-              <button
-                type="button"
-                className="details-btn"
-                onClick={() => showDetails(task.id, openDetails)}
-              >
-                Detalhes
-              </button>
-              <button
-                type="button"
-                className="icon-btn"
-                onClick={() => openEdit(task)}
-              >
-                ✏️
-              </button>
-              <button
-                type="button"
-                className="icon-btn"
-                onClick={() => openDelete(task)}
-              >
-                🗑
-              </button>
-            </li>
+            <TaskItem key={task.id} task={task} />
           ))}
-        </ul>
+        </Stack>
       )}
-
-      {detailsError && <p role="alert">{detailsError}</p>}
     </>
   );
 }

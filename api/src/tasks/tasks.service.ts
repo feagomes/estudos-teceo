@@ -10,10 +10,14 @@ export class TasksService {
   constructor(
     @InjectRepository(Task)
     private readonly taskRepo: Repository<Task>,
-  ) {}
+  ) { }
   create(createTaskDto: CreateTaskDto) {
-    const task = this.taskRepo.create(createTaskDto);
-    return this.taskRepo.save(task);
+    try {
+      console.log(createTaskDto)
+      const task = this.taskRepo.create(createTaskDto);
+      return this.taskRepo.save(task);
+    }
+    catch (error) { console.log(error) }
   }
 
   findAll() {
@@ -33,7 +37,7 @@ export class TasksService {
     Object.assign(task, updateTaskDto);
     return this.taskRepo.save(task);
   }
-  
+
   async softRemove(id: number) {
     const task = await this.findOne(id);
     return this.taskRepo.softRemove(task);

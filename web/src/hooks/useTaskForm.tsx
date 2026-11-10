@@ -1,39 +1,24 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {taskFormSchema, type TaskFormInput, type TaskPayload, } from "../components/actions";
-import useTasks from "./useTasks";
-import useTaskPanel from "./useTaskPanel";
+import { z } from "zod";
+
+const taskFormSchema = z.object({
+  name: z.string().trim().min(1, "Informe o nome da tarefa"),
+  description: z.string().optional(),
+  deadline: z.string().optional(),
+});
+
+export type TaskFormInput = z.input<typeof taskFormSchema>;
+export type TaskPayload = z.output<typeof taskFormSchema>;
 
 export default function useTaskForm() {
-  const { editingTask: task, closeForm } = useTaskPanel();
-  const { saveTask, pendingSaveTask } = useTasks();
-  const {register, handleSubmit, setError, formState: { errors }, } = useForm<TaskFormInput, unknown, TaskPayload>({
+  return useForm({
     resolver: zodResolver(taskFormSchema),
-    defaultValues: {
-      name: task?.name ?? "",
-      description: task?.description ?? "",
-      deadline: task?.deadline ?? "",
-    },
-  });
-
-  function onSubmit(values: TaskPayload) {
-    saveTask(
-      { task: values, taskId: task?.id },
+    defaultValues: 
       {
-        onSuccess: closeForm,
-        onError: () =>
-          setError("root", { message: "Não foi possível salvar a tarefa" }),
+        name: "",
+        description: "",
+        deadline: "",
       },
-    );
-  }
-
-  return {
-    task,
-    closeForm,
-    pendingSaveTask,
-    register,
-    handleSubmit,
-    errors,
-    onSubmit,
-  };
+  });
 }

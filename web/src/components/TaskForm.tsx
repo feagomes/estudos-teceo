@@ -1,45 +1,74 @@
-import useTaskForm from "../hooks/useTaskForm";
+import { Controller } from "react-hook-form";
+import { Alert, Button, Stack, TextField } from "@mui/material";
+import useTaskForm, { type TaskPayload } from "../hooks/useTaskForm";
+import useTasks from "../hooks/useTasks";
+import useTaskPanel from "../hooks/useTaskPanel";
 
 export default function TaskForm() {
-  const {task, closeForm, pendingSaveTask, register, handleSubmit, errors, onSubmit, } = useTaskForm();
+  const { closeForm } = useTaskPanel();
+  const { createTask, pendingCreateTask } = useTasks();
+  const { control , handleSubmit, setError, formState: { errors } } = useTaskForm();
+
+  function onSubmit(values: TaskPayload) {
+    createTask(values, {
+      onSuccess: closeForm,
+      onError: () => setError("root", { message: "Não foi possível criar a tarefa" }),
+    });
+  }
 
   return (
-    <form className="task-form" onSubmit={handleSubmit(onSubmit)} noValidate>
-      <label className="form-field">
-        <span>Nome</span>
-        <input {...register("name")} placeholder="Ex: Fazer relatório" />
-        {errors.name && <span role="alert">{errors.name.message}</span>}
-      </label>
-      <label className="form-field">
-        <span>Descrição</span>
-        <input
-          {...register("description")}
-          placeholder="Ex: Escrever no overleaf"
-        />
-        {errors.description && (
-          <span role="alert">{errors.description.message}</span>
+    <Stack component="form" spacing={2} onSubmit={handleSubmit(onSubmit)} noValidate>
+      <Controller
+        name="name"
+        control={control}
+        render={({ field, fieldState: { error } }) => (
+          <TextField
+            {...field}
+            label="Nome"
+            placeholder="Ex: Fazer relatório"
+            error={!!error}
+            helperText={error?.message}
+          />
         )}
-      </label>
-      <label className="form-field">
-        <span>Prazo</span>
-        <input type="date" {...register("deadline")} />
-        {errors.deadline && <span role="alert">{errors.deadline.message}</span>}
-      </label>
-      <div className="form-actions">
-        <button type="submit" disabled={pendingSaveTask}>
-          {task ? "Salvar" : "Criar Task"}
-        </button>
-        {task && (
-          <button type="button" className="secundario" onClick={closeForm}>
-            Cancelar
-          </button>
+      />
+      <Controller
+        name="description"
+        control={control}
+        render={({ field, fieldState: { error } }) => (
+          <TextField
+            {...field}
+            label="Descrição"
+            placeholder="Ex: Fazer relatório de vendas do mês"
+            multiline
+            minRows={3}
+            error={!!error}
+            helperText={error?.message}
+          />
         )}
-      </div>
-      {errors.root && (
-        <p role="alert" style={{ color: "red" }}>
-          {errors.root.message}
-        </p>
-      )}
-    </form>
+      />
+      <Controller
+        name="deadline"
+        control={control}
+        render={({ field, fieldState: { error } }) => (
+          <TextField
+            {...field}
+            label="Prazo"
+            type="date"
+            slotProps={{ inputLabel: { shrink: true } }}
+            error={!!error}
+            helperText={error?.message}
+          />
+        )}
+      />
+      <Stack direction="row" spacing={1}>
+        <Button variant="outlined" fullWidth onClick={closeForm}>
+          Cancelar
+        </Button>
+        <Button type="submit" variant="contained" fullWidth loading={pendingCreateTask}>
+          Criar Task
+        </Button>
+      </Stack>
+      {errors.root && <Alert severity="error">{errors.root.message}</Alert>}
+    </Stack>
   );
 }

@@ -1,33 +1,26 @@
-import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import tasksApi, { type Task, type TaskPayload } from "../components/actions";
+import tasksApi, { type Task } from "../components/actions";
+import type { TaskPayload } from "./useTaskForm";
 
 export default function useTasks() {
   const queryClient = useQueryClient();
-  const [detailsError, setDetailsError] = useState<string | null>(null);
-
   const {data: tasks = [], isError, isPending: pendingTasks,} = useQuery({
     queryKey: ["tasks"],
     queryFn: tasksApi.getTasks,
   });
 
-  async function showDetails(id: number, onFound: (task: Task) => void) {
-    try {
-      const task = await queryClient.query({
-        queryKey: ["task", id],
-        queryFn: () => tasksApi.findById(id),
-      });
-      //onSuccess 
-      setDetailsError(null);
-      onFound(task);
-    } catch (error) {
-      setDetailsError(
-        error instanceof Error ? error.message : "Não foi possível carregar os detalhes",);
-    }
-  }
+  const { mutate: showDetails, error: detailsError } = useMutation({
+    mutationFn: (id: number) => tasksApi.findById(id),
+  });
 
-  const { mutate: saveTask, isPending: pendingSaveTask } = useMutation({
-    mutationFn: ({ task, taskId }: { task: TaskPayload; taskId?: number }) => tasksApi.saveTask(task, taskId),
+  const { mutate: createTask, isPending: pendingCreateTask } = useMutation({
+    mutationFn: (task: TaskPayload) => tasksApi.createTask(task),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks"] }),
+  });
+
+  const { mutate: editTask, isPending: pendingEditTask } = useMutation({
+    mutationFn: ({ task, taskId }: { task: TaskPayload; taskId: number }) =>
+      tasksApi.editTask(task, taskId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks"] }),
   });
 
@@ -48,13 +41,15 @@ export default function useTasks() {
     pendingTasks,
     showDetails,
     detailsError,
-    saveTask,
-    pendingSaveTask,
     deleteTask,
     pendingDeleteTask,
     deleteError,
     resetDeleteTask,
     changeStatus,
     pendingChangeStatus,
+    createTask,
+    pendingCreateTask,
+    editTask,
+    pendingEditTask,
   };
 }

@@ -4,30 +4,20 @@ import { TaskPanelContext } from "../hooks/useTaskPanel";
 
 export function TaskPanelProvider({ children }: { children: ReactNode }) {
   const [currentTask, setCurrentTask] = useState<Task | null>(null);
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
 
   function openDetails(task: Task) {
     setCurrentTask(task);
-    setEditingTask(null);
     setShowForm(false);
   }
 
   function openCreate() {
-    setEditingTask(null);
-    setCurrentTask(null);
-    setShowForm(true);
-  }
-
-  function openEdit(task: Task) {
-    setEditingTask(task);
     setCurrentTask(null);
     setShowForm(true);
   }
 
   function closeForm() {
-    setEditingTask(null);
     setShowForm(false);
   }
 
@@ -45,7 +35,6 @@ export function TaskPanelProvider({ children }: { children: ReactNode }) {
 
   function handleDeleted(task: Task) {
     if (currentTask?.id === task.id) setCurrentTask(null);
-    if (editingTask?.id === task.id) closeForm();
     setTaskToDelete(null);
   }
 
@@ -53,13 +42,11 @@ export function TaskPanelProvider({ children }: { children: ReactNode }) {
     <TaskPanelContext
       value={{
         currentTask,
-        editingTask,
         showForm,
         taskToDelete,
         openDetails,
         closeDetails,
         openCreate,
-        openEdit,
         closeForm,
         openDelete,
         closeDelete,
